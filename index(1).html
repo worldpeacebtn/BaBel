@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>X42 Babel Protocol — API Entrance</title>
+<style>
+html,body{margin:0;width:100%;height:100%;background:#030308;color:#fff;font-family:Arial,sans-serif}
+#gate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#0a0e1a,#020205);text-align:center}
+.box{width:min(680px,calc(100% - 36px));padding:30px;border:1px solid #00f3ff66;border-radius:20px;background:#080c16e8;box-shadow:0 0 50px #00f3ff22}
+h1{font-family:monospace;letter-spacing:.15em;color:#fff;text-shadow:0 0 15px #00f3ff}
+p{color:#b9c3d0;line-height:1.5}
+input{box-sizing:border-box;width:100%;padding:14px;border-radius:12px;border:1px solid #00f3ff66;background:#000;color:#fff;font-size:15px;outline:none}
+button{margin-top:14px;padding:13px 24px;border-radius:12px;border:1px solid #00f3ff;background:#00f3ff18;color:#dffcff;cursor:pointer;font-weight:700;letter-spacing:.08em}
+button:hover{background:#00f3ff;color:#000}
+.small{font-size:12px;color:#718092}
+#status{margin-top:10px;font:12px monospace;color:#8ef7a7;min-height:16px}
+</style>
+</head>
+<body>
+<div id="gate">
+ <div class="box">
+  <div style="font:12px monospace;color:#00f3ff;letter-spacing:.2em">X42 // AOE // BABEL PROTOCOL</div>
+  <h1>NEURAL LINK</h1>
+  <p>Enter your own Gemini API key to unlock the existing Babel interface. The key is kept in this browser session unless you choose to remember it.</p>
+  <input id="key" type="password" autocomplete="off" placeholder="Paste Gemini API key here">
+  <label style="display:block;text-align:left;margin-top:12px;font:12px monospace;color:#9aa6b2"><input id="remember" type="checkbox" style="width:auto;margin-right:7px"> Remember on this device</label>
+  <button id="enter">INITIATE AOE NEURAL LINK</button>
+  <div id="status"></div>
+  <p class="small">For a public deployment, a server-side proxy is safer than exposing an API key in browser code.</p>
+ </div>
+</div>
+<script>
+const SOURCE="https://worldpeacebtn.github.io/BaBel/";
+const STORE="x42_babel_gemini_api_key";
+const keyEl=document.getElementById("key"), remember=document.getElementById("remember"), status=document.getElementById("status");
+const saved=localStorage.getItem(STORE); if(saved){keyEl.value=saved;remember.checked=true;}
+document.getElementById("enter").onclick=async()=>{
+ const key=keyEl.value.trim();
+ if(!key){status.style.color="#ff75df";status.textContent="API KEY REQUIRED";keyEl.focus();return;}
+ if(remember.checked)localStorage.setItem(STORE,key);else localStorage.removeItem(STORE);
+ status.textContent="LOADING BABEL PROTOCOL...";
+ try{
+   const r=await fetch(SOURCE,{cache:"no-store"});
+   if(!r.ok)throw new Error("Could not load source");
+   let html=await r.text();
+   // Inject the operator key into every existing Gemini call in the supplied app.
+   html=html.replace(/const\s+apiKey\s*=\s*""\s*;/g,'const apiKey = window.__X42_API_KEY;');
+   // Also make accidental blank-key declarations elsewhere use the same key.
+   html=html.replace(/let\s+apiKey\s*=\s*""\s*;/g,'let apiKey = window.__X42_API_KEY;');
+   window.__X42_API_KEY=key;
+   document.open();document.write(html);document.close();
+ }catch(e){
+   status.style.color="#ff75df";
+   status.textContent="LOAD FAILED — open the original site once or check your connection.";
+   console.error(e);
+ }
+};
+keyEl.addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("enter").click()});
+</script>
+</body>
+</html>
