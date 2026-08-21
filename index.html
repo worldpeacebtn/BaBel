@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X42 [PROJEXT 42] - AoE Babel Protocol & SylverCrystall OS X</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-green: #00ff66;
+            --sylver-crystall: #e2f7ff;
+            --royal-purple: #8a2be2;
+            --dark-bg: #030308;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--dark-bg);
+            font-family: 'Rajdhani', sans-serif;
+            color: white;
+            user-select: none;
+        }
+
+        h1, h2, h3, .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            pointer-events: none;
+        }
+
+        .glitch-text {
+            position: relative;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.8), 0 0 20px rgba(255, 0, 234, 0.6);
+        }
+
+        .glass-panel {
+            background: rgba(8, 12, 22, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 243, 255, 0.25);
+            pointer-events: auto;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+            border-radius: 1rem;
+        }
+
+        .glass-card {
+            background: rgba(12, 16, 30, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: auto;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.3);
+        }
+
+        .glass-card.active {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 35px rgba(255, 0, 234, 0.5), inset 0 0 15px rgba(255, 0, 234, 0.2);
+            transform: translateY(-6px);
+        }
+
+        #init-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #0a0e1a 0%, #020205 100%);
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            pointer-events: auto;
+            transition: opacity 0.8s ease-out;
+        }
+
+        .cyber-btn {
+            background: linear-gradient(135deg, rgba(0,243,255,0.15), rgba(255,0,234,0.15));
+            color: var(--sylver-crystall);
+            border: 1.5px solid var(--neon-cyan);
+            padding: 14px 36px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        .cyber-btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 30px var(--neon-cyan);
+            font-weight: 800;
+        }
+
+        #gesture-canvas {
+            touch-action: none;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px dashed rgba(0, 243, 255, 0.4);
+            border-radius: 0.75rem;
+            cursor: crosshair;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 243, 255, 0.4);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <!-- Start Overlay -->
+    <div id="init-overlay">
+        <div class="text-center p-6 max-w-xl">
+            <div class="inline-block px-3 py-1 mb-3 rounded-full bg-cyan-950/80 border border-cyan-400/50 text-cyan-300 text-xs font-mono tracking-widest uppercase">
+                Agency of Eternity (AoE) // SylverCrystall OS X
+            </div>
+            <h1 class="text-4xl md:text-6xl text-white mb-4 orbitron glitch-text font-black tracking-widest">BABEL PROTOCOL</h1>
+            <p class="text-gray-300 mb-8 text-sm md:text-base leading-relaxed">
+                When spoken words fragment into Babel noise, humanity re-aligns through universal channels: <span class="text-cyan-300">Harmonic Audio</span>, <span class="text-pink-400">Kinetic Gestures</span>, <span class="text-green-400">Visual Sacred Geometry</span>, and <span class="text-purple-400">Empathy Resonance</span>.
+            </p>
+            <button id="start-btn" class="cyber-btn orbitron font-bold">Initiate AoE Neural Link</button>
+        </div>
+    </div>
+
+    <div id="ui-layer" class="p-3 md:p-6 flex flex-col justify-between opacity-0 transition-opacity duration-1000">
+        
+        <!-- Header -->
+        <header class="glass-panel px-6 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+                    <h1 class="text-2xl md:text-3xl font-black orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-500">
+                        AoE <span class="text-white font-mono text-lg">[SYLVERCRYSTALL OS X]</span>
+                    </h1>
+                </div>
+                <p class="text-[11px] text-cyan-300 uppercase tracking-[0.25em]">Agency of Eternity // Universal Communication Matrix</p>
+            </div>
+
+            <!-- Navigation Channels -->
+            <div class="flex items-center gap-2 overflow-x-auto py-1">
+                <button class="nav-tab active bg-cyan-500/20 border border-cyan-400 text-cyan-200 px-3 py-1.5 rounded-lg text-xs font-orbitron tracking-wider hover:bg-cyan-400 hover:text-black transition-all" data-target="descrambler">
+                    🌐 BABEL DE-SCRAMBLER
+                </button>
+                <button class="nav-tab bg-gray-900/60 border border-gray-700 text-gray-300 px-3 py-1.5 rounded-lg text-xs font-orbitron tracking-wider hover:bg-cyan-400 hover:text-black transition-all" data-target="gestures">
+                    ✍️ KINETIC GESTURES
+                </button>
+                <button class="nav-tab bg-gray-900/60 border border-gray-700 text-gray-300 px-3 py-1.5 rounded-lg text-xs font-orbitron tracking-wider hover:bg-cyan-400 hover:text-black transition-all" data-target="emotions">
+                    💖 EMPATHY MATRIX
+                </button>
+                <button id="ai-chat-open-btn" class="bg-pink-500/20 border border-pink-400 text-pink-300 px-3 py-1.5 rounded-lg text-xs font-orbitron tracking-wider hover:bg-pink-400 hover:text-black transition-all flex items-center gap-1.5">
+                    🧠 AoE NEURAL AI
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-grow flex flex-col justify-center items-center my-3 relative">
+            
+            <!-- SECTION 1: Babel De-scrambler -->
+            <div id="section-descrambler" class="w-full max-w-5xl flex flex-col gap-4 pointer-events-auto">
+                <div class="glass-panel p-5 rounded-2xl flex flex-col md:flex-row gap-6 items-center">
+                    <div class="flex-1 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-cyan-400 font-mono tracking-widest uppercase">INPUT // Fragmented Dialect / Babel Noise</span>
+                            <span class="text-[10px] text-pink-400 font-mono" id="babel-status">STATIC DRIFT</span>
+                        </div>
+                        <textarea id="babel-input" rows="2" placeholder="Type fragmented words, raw emotion, or language chaos here..." class="w-full bg-black/70 border border-cyan-500/30 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-cyan-400 font-rajdhani custom-scrollbar"></textarea>
+                        
+                        <div class="flex gap-2">
+                            <button id="translate-babel-btn" class="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-orbitron font-bold text-xs py-2.5 rounded-lg tracking-wider hover:brightness-125 transition-all">
+                                ⚡ HARMONIZE THROUGH AoE SYLVERCRYSTALL
+                            </button>
+                            <button id="random-babel-btn" class="bg-purple-950/60 border border-purple-500/40 text-purple-200 text-xs font-orbitron px-3 rounded-lg hover:bg-purple-800 transition-all">
+                                🎲 RANDOM BABEL NOISE
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Audio-Visual Harmony Output -->
+                    <div class="w-full md:w-80 bg-black/60 border border-purple-500/30 rounded-xl p-4 flex flex-col justify-between h-full">
+                        <div>
+                            <span class="text-[10px] text-purple-300 font-mono tracking-widest uppercase">SYLVERCRYSTALL HARMONIC OUTPUT</span>
+                            <div id="translated-intent" class="text-xs text-cyan-100 font-mono my-2 italic min-h-[48px] flex items-center">
+                                "Waiting for Babel input to synthesize universal resonance..."
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-800 pt-3 flex justify-between items-center">
+                            <div class="text-[10px] text-gray-400 font-mono">
+                                FREQ: <span id="out-freq" class="text-cyan-400">432 Hz</span>
+                            </div>
+                            <button id="play-harmony-btn" class="bg-pink-500/20 border border-pink-400 text-pink-300 text-xs px-2.5 py-1 rounded hover:bg-pink-400 hover:text-black transition-all">
+                                🔊 PLAY HARMONIC
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4 Universal Communication Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    
+                    <div class="glass-card p-4 rounded-xl flex flex-col justify-between h-40" data-channel="music">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[10px] font-mono text-cyan-400">CHANNEL 01</span>
+                                <span class="text-xs">🎵</span>
+                            </div>
+                            <h2 class="text-sm orbitron text-white">Music & Waves</h2>
+                            <p class="text-[11px] text-gray-300 mt-1">Tone chords bypass dialect barriers directly to brainwave sync.</p>
+                        </div>
+                        <button class="channel-trigger-btn bg-cyan-950/50 border border-cyan-500/40 text-cyan-300 text-[10px] py-1 rounded font-orbitron hover:bg-cyan-400 hover:text-black transition-all mt-2">
+                            RESONATE FREQUENCY
+                        </button>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-xl flex flex-col justify-between h-40" data-channel="gestures">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[10px] font-mono text-pink-400">CHANNEL 02</span>
+                                <span class="text-xs">✍️</span>
+                            </div>
+                            <h2 class="text-sm orbitron text-white">Kinetic Flow</h2>
+                            <p class="text-[11px] text-gray-300 mt-1">Drawing arcs and strokes expresses intent faster than syntax.</p>
+                        </div>
+                        <button class="channel-trigger-btn bg-pink-950/50 border border-pink-500/40 text-pink-300 text-[10px] py-1 rounded font-orbitron hover:bg-pink-400 hover:text-black transition-all mt-2">
+                            OPEN GESTURE PAD
+                        </button>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-xl flex flex-col justify-between h-40" data-channel="visuals">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[10px] font-mono text-green-400">CHANNEL 03</span>
+                                <span class="text-xs">💎</span>
+                            </div>
+                            <h2 class="text-sm orbitron text-white">Sacred Geometry</h2>
+                            <p class="text-[11px] text-gray-300 mt-1">SylverCrystall geometry holds timeless archetypal meaning.</p>
+                        </div>
+                        <button class="channel-trigger-btn bg-green-950/50 border border-green-500/40 text-green-300 text-[10px] py-1 rounded font-orbitron hover:bg-green-400 hover:text-black transition-all mt-2">
+                            MUTATE CRYSTALL LATTICE
+                        </button>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-xl flex flex-col justify-between h-40" data-channel="emotions">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[10px] font-mono text-purple-400">CHANNEL 04</span>
+                                <span class="text-xs">💖</span>
+                            </div>
+                            <h2 class="text-sm orbitron text-white">Empathy Spectrum</h2>
+                            <p class="text-[11px] text-gray-300 mt-1">Shared feelings of safety, hope, and compassion break isolation.</p>
+                        </div>
+                        <button class="channel-trigger-btn bg-purple-950/50 border border-purple-500/40 text-purple-300 text-[10px] py-1 rounded font-orbitron hover:bg-purple-400 hover:text-black transition-all mt-2">
+                            TUNE EMPATHY FIELD
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SECTION 2: Kinetic Gestures Canvas (Hidden initially) -->
+            <div id="section-gestures" class="hidden w-full max-w-4xl glass-panel p-5 rounded-2xl flex-col gap-4 pointer-events-auto">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg orbitron text-cyan-300">KINETIC GESTURE TRANSLATOR</h2>
+                        <p class="text-xs text-gray-300">Draw shapes, arcs, or ripples below. Kinetic strokes translate into musical harmonics and crystal particle bursts.</p>
+                    </div>
+                    <button id="clear-canvas-btn" class="bg-red-950/50 border border-red-500/40 text-red-300 text-xs px-3 py-1 rounded hover:bg-red-500 hover:text-black transition-all font-orbitron">
+                        CLEAR CANVAS
+                    </button>
+                </div>
+
+                <div class="relative w-full h-64 md:h-80">
+                    <canvas id="gesture-canvas" class="w-full h-full"></canvas>
+                    <div class="absolute bottom-3 left-3 bg-black/70 px-3 py-1 rounded text-[10px] text-cyan-300 font-mono pointer-events-none">
+                        GESTURE STROKES: <span id="stroke-count">0</span> | FREQ WAVE: <span id="gesture-freq">432 Hz</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: Empathy Matrix (Hidden initially) -->
+            <div id="section-emotions" class="hidden w-full max-w-3xl glass-panel p-6 rounded-2xl flex-col gap-5 pointer-events-auto">
+                <div>
+                    <h2 class="text-lg orbitron text-pink-400">EMPATHY & FEELING RESONATOR</h2>
+                    <p class="text-xs text-gray-300">Adjust the emotional sliders below to re-tune the ambient atmospheric synthesis and lighting color palette of the SylverCrystall core.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-xs font-mono mb-1">
+                            <span class="text-cyan-300">COMPASSION & SAFETY</span>
+                            <span id="val-compassion">75%</span>
+                        </div>
+                        <input type="range" id="slider-compassion" min="0" max="100" value="75" class="w-full accent-cyan-400 cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-mono mb-1">
+                            <span class="text-green-300">HOPE & REGENERATION</span>
+                            <span id="val-hope">80%</span>
+                        </div>
+                        <input type="range" id="slider-hope" min="0" max="100" value="80" class="w-full accent-green-400 cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-mono mb-1">
+                            <span class="text-pink-300">UNCONDITIONAL PEACE</span>
+                            <span id="val-peace">90%</span>
+                        </div>
+                        <input type="range" id="slider-peace" min="0" max="100" value="90" class="w-full accent-pink-400 cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="p-3 bg-black/60 rounded-xl border border-pink-500/30 text-xs text-gray-300 font-mono">
+                    CURRENT STATE: <span id="empathy-state-text" class="text-pink-300 font-bold">HARMONIOUS RECEPTIVITY</span>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer Visualizer -->
+        <footer class="glass-panel px-6 py-3 flex justify-between items-center pointer-events-auto">
+            <div class="text-[10px] text-gray-400 font-mono flex items-center gap-3">
+                <div>SYS: <span class="text-cyan-300">AoE_SYLVER_OS_X</span></div>
+                <div>| AUDIO: <span id="audio-engine-state" class="text-yellow-400">STANDBY</span></div>
+                <div class="hidden sm:block">| MATRIX: <span class="text-green-400">ACTIVE</span></div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button id="generate-protocol-btn" class="bg-purple-950/60 border border-purple-400 text-purple-200 text-xs px-3 py-1 rounded font-orbitron hover:bg-purple-400 hover:text-black transition-all">
+                    ✨ GENERATE AoE PROTOCOL (STRUCTURED)
+                </button>
+                <button id="audio-brief-btn" class="bg-pink-950/60 border border-pink-400 text-pink-200 text-xs px-3 py-1 rounded font-orbitron hover:bg-pink-400 hover:text-black transition-all">
+                    🎙️ AoE AUDIO BRIEF (TTS)
+                </button>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- AI Neural Modal -->
+    <div id="ai-modal" class="fixed inset-0 z-40 bg-black/80 backdrop-blur-md flex justify-center items-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="glass-panel w-full max-w-2xl h-[85vh] rounded-2xl flex flex-col border border-cyan-500/40 shadow-[0_0_50px_rgba(0,243,255,0.25)]">
+            
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-800 bg-black/50 rounded-t-2xl">
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></div>
+                    <h3 id="modal-title" class="orbitron font-bold text-cyan-300 tracking-wider">AoE NEURAL CORE // SYLVERCRYSTALL</h3>
+                </div>
+                <button id="ai-modal-close" class="text-gray-400 hover:text-white font-mono text-2xl">&times;</button>
+            </div>
+
+            <!-- Messages Area -->
+            <div id="modal-chat-messages" class="flex-grow p-6 overflow-y-auto custom-scrollbar space-y-4 text-sm">
+                <div class="bg-cyan-950/40 border border-cyan-500/30 p-4 rounded-xl">
+                    <p class="text-cyan-300 font-orbitron text-xs mb-1">AoE AGENCY OF ETERNITY CORE</p>
+                    <p class="text-gray-200 leading-relaxed">Welcome. I am the Agency of Eternity (AoE) intelligence unit within the SylverCrystall OS X. We navigate the Babel scenario together—using inclusive sound, visuals, kinetic gestures, and deep empathy to protect life and preserve agency. How may I assist your communication today?</p>
+                </div>
+            </div>
+
+            <!-- TTS Player Box (hidden by default) -->
+            <div id="tts-player-container" class="hidden px-6 py-3 bg-pink-950/40 border-t border-pink-500/30 flex items-center justify-between">
+                <div class="text-xs text-pink-300 font-mono flex items-center gap-2">
+                    <span class="animate-ping">🎙️</span> <span id="tts-status">Synthesizing audio voice...</span>
+                </div>
+                <audio id="tts-audio-element" controls class="h-8 max-w-[220px]"></audio>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="p-4 border-t border-gray-800 bg-black/70 flex gap-3 rounded-b-2xl">
+                <input type="text" id="modal-input" placeholder="Ask AoE about universal communication, Babel protocols, or SylverCrystall OS X..." class="flex-grow bg-black/80 border border-cyan-500/40 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 font-rajdhani">
+                <button id="modal-send-btn" class="bg-cyan-500 hover:bg-cyan-400 text-black font-orbitron font-bold px-6 py-3 rounded-xl transition-all text-xs tracking-wider">
+                    TRANSMIT
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x030308, 0.015);
+
+        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 2, 18);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // Center SylverCrystall Core
+        const crystalGroup = new THREE.Group();
+        scene.add(crystalGroup);
+
+        const coreGeometry = new THREE.OctahedronGeometry(3, 2);
+        const coreMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00f3ff,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.6
+        });
+        const crystalCore = new THREE.Mesh(coreGeometry, coreMaterial);
+        crystalGroup.add(crystalCore);
+
+        const outerGeometry = new THREE.IcosahedronGeometry(4.5, 1);
+        const outerMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff00ea,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.25
+        });
+        const outerCrystal = new THREE.Mesh(outerGeometry, outerMaterial);
+        crystalGroup.add(outerCrystal);
+
+        // Particle field representing Babel noise / unified frequencies
+        const particlesCount = 800;
+        const particlesGeometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particlesCount * 3);
+        const colors = new Float32Array(particlesCount * 3);
+
+        const colorOption1 = new THREE.Color(0x00f3ff);
+        const colorOption2 = new THREE.Color(0xff00ea);
+        const colorOption3 = new THREE.Color(0x00ff66);
+
+        for (let i = 0; i < particlesCount; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 60;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 40;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 60;
+
+            const chosenColor = Math.random() > 0.6 ? colorOption1 : (Math.random() > 0.3 ? colorOption2 : colorOption3);
+            colors[i * 3] = chosenColor.r;
+            colors[i * 3 + 1] = chosenColor.g;
+            colors[i * 3 + 2] = chosenColor.b;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.18,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.7,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particleSystem);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        let audioInitialized = false;
+        let polySynth, droneSynth, noiseSynth;
+
+        async function initToneAudio() {
+            if (audioInitialized) return;
+            await Tone.start();
+
+            polySynth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: "triangle" },
+                envelope: { attack: 0.1, decay: 0.5, sustain: 0.6, release: 1.2 }
+            }).toDestination();
+            polySynth.volume.value = -8;
+
+            droneSynth = new Tone.FMSynth({
+                harmonicity: 1.5,
+                modulationIndex: 2,
+                oscillator: { type: "sine" },
+                envelope: { attack: 2, decay: 1, sustain: 1, release: 3 }
+            }).toDestination();
+            droneSynth.volume.value = -18;
+
+            audioInitialized = true;
+            document.getElementById('audio-engine-state').innerText = "ONLINE (432Hz)";
+            document.getElementById('audio-engine-state').className = "text-green-400";
+        }
+
+        function playHarmonicChord(notes = ["C4", "E4", "G4", "B4"]) {
+            if (!audioInitialized) return;
+            polySynth.triggerAttackRelease(notes, "1m");
+        }
+
+        const gestureCanvas = document.getElementById('gesture-canvas');
+        const ctx = gestureCanvas.getContext('2d');
+        let isDrawing = false;
+        let strokeCount = 0;
+
+        function resizeCanvas() {
+            if (gestureCanvas.parentElement) {
+                gestureCanvas.width = gestureCanvas.parentElement.clientWidth;
+                gestureCanvas.height = gestureCanvas.parentElement.clientHeight;
+            }
+        }
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function stopDrawing() {
+            if (isDrawing) {
+                isDrawing = false;
+                ctx.beginPath();
+                strokeCount++;
+                document.getElementById('stroke-count').innerText = strokeCount;
+                
+                // Trigger musical gesture wave
+                const freq = 200 + (strokeCount * 45) % 600;
+                document.getElementById('gesture-freq').innerText = `${Math.round(freq)} Hz`;
+                if (audioInitialized) {
+                    polySynth.triggerAttackRelease(freq, "8n");
+                }
+                
+                // Rotate crystal on gesture finish
+                crystalGroup.rotation.y += 0.5;
+            }
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = gestureCanvas.getBoundingClientRect();
+            const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+            const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#00f3ff';
+            ctx.shadowColor = '#ff00ea';
+            ctx.shadowBlur = 10;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        gestureCanvas.addEventListener('mousedown', startDrawing);
+        gestureCanvas.addEventListener('mouseup', stopDrawing);
+        gestureCanvas.addEventListener('mousemove', draw);
+
+        gestureCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
+        gestureCanvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); });
+        gestureCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+
+        document.getElementById('clear-canvas-btn').addEventListener('click', () => {
+            ctx.clearRect(0, 0, gestureCanvas.width, gestureCanvas.height);
+            strokeCount = 0;
+            document.getElementById('stroke-count').innerText = '0';
+        });
+
+        // Navigation Tabs Toggle
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => {
+                    t.classList.remove('active', 'bg-cyan-500/20', 'border-cyan-400', 'text-cyan-200');
+                    t.classList.add('bg-gray-900/60', 'border-gray-700', 'text-gray-300');
+                });
+                tab.classList.add('active', 'bg-cyan-500/20', 'border-cyan-400', 'text-cyan-200');
+                
+                const target = tab.dataset.target;
+                document.getElementById('section-descrambler').classList.toggle('hidden', target !== 'descrambler');
+                document.getElementById('section-gestures').classList.toggle('hidden', target !== 'gestures');
+                document.getElementById('section-emotions').classList.toggle('hidden', target !== 'emotions');
+                
+                if (target === 'gestures') resizeCanvas();
+            });
+        });
+
+        // Channel Cards Buttons Trigger
+        document.querySelectorAll('.channel-trigger-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const card = e.target.closest('.glass-card');
+                const channel = card.dataset.channel;
+                
+                if (channel === 'music') {
+                    playHarmonicChord(["D4", "F#4", "A4", "C#5"]);
+                } else if (channel === 'gestures') {
+                    document.querySelector('[data-target="gestures"]').click();
+                } else if (channel === 'visuals') {
+                    crystalCore.material.color.setHex(Math.random() * 0xffffff);
+                    outerCrystal.rotation.z += 1.2;
+                } else if (channel === 'emotions') {
+                    document.querySelector('[data-target="emotions"]').click();
+                }
+            });
+        });
+
+        // Start Button Event
+        document.getElementById('start-btn').addEventListener('click', async () => {
+            document.getElementById('start-btn').innerText = "CONNECTING AoE...";
+            await initToneAudio();
+            document.getElementById('init-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('init-overlay').style.display = 'none';
+                document.getElementById('ui-layer').classList.remove('opacity-0');
+            }, 800);
+        });
+
+        const aiModal = document.getElementById('ai-modal');
+        const modalChatMessages = document.getElementById('modal-chat-messages');
+        const modalInput = document.getElementById('modal-input');
+        const modalSendBtn = document.getElementById('modal-send-btn');
+        const modalTitle = document.getElementById('modal-title');
+
+        document.getElementById('ai-chat-open-btn').addEventListener('click', () => {
+            modalTitle.innerText = "AoE NEURAL CORE // SYLVERCRYSTALL";
+            aiModal.classList.remove('opacity-0', 'pointer-events-none');
+        });
+
+        document.getElementById('ai-modal-close').addEventListener('click', () => {
+            aiModal.classList.add('opacity-0', 'pointer-events-none');
+        });
+
+        // Babel De-scrambler Translation
+        const sampleBabelTexts = [
+            "Noise static fragmented isolated disconnect cannot explain the inner weight help",
+            "Too many dialects broken towers nobody hears the underlying cry for peace",
+            "Exhaustion burnout overload resource deficit search for safe exit channel",
+            "Language loop error system overload yearning for true mutual understanding"
+        ];
+
+        document.getElementById('random-babel-btn').addEventListener('click', () => {
+            const randomPick = sampleBabelTexts[Math.floor(Math.random() * sampleBabelTexts.length)];
+            document.getElementById('babel-input').value = randomPick;
+        });
+
+        document.getElementById('translate-babel-btn').addEventListener('click', async () => {
+            const rawText = document.getElementById('babel-input').value.trim();
+            if (!rawText) return;
+
+            const outBox = document.getElementById('translated-intent');
+            outBox.innerText = "De-scrambling through AoE SylverCrystall OS X...";
+            document.getElementById('babel-status').innerText = "HARMONIZING...";
+
+            try {
+                const systemPrompt = "You are the AoE (Agency of Eternity) SylverCrystall OS X Babel De-scrambler. Translate broken, fragmented, or overloaded human thoughts into 1 single poetic, comforting, crystal-clear sentence of universal intent and hope.";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`;
+                
+                const payload = {
+                    contents: [{ role: 'user', parts: [{ text: `De-scramble this Babel text: "${rawText}"` }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Universal Intent: You are safe, heard, and deeply connected beyond words.";
+                    outBox.innerText = `"${text.trim()}"`;
+                    document.getElementById('babel-status').innerText = "HARMONIZED";
+                    
+                    playHarmonicChord(["F4", "A4", "C5", "E5"]);
+                    crystalCore.material.color.setHex(0x00ff66);
+                } else {
+                    throw new Error("API error");
+                }
+            } catch (err) {
+                outBox.innerText = '"Universal Intent: Beyond all static lies an unbreakable bond of mutual care and understanding."';
+                document.getElementById('babel-status').innerText = "FALLBACK HARMONY";
+            }
+        });
+
+        document.getElementById('play-harmony-btn').addEventListener('click', () => {
+            playHarmonicChord(["C4", "G4", "C5", "E5"]);
+        });
+
+        // Structured Protocol Generation
+        document.getElementById('generate-protocol-btn').addEventListener('click', async () => {
+            modalTitle.innerText = "AoE STRUCTURED COMMUNICATION PROTOCOL";
+            aiModal.classList.remove('opacity-0', 'pointer-events-none');
+
+            const initDiv = document.createElement('div');
+            initDiv.className = 'bg-purple-950/40 border border-purple-500/30 p-4 rounded-xl';
+            initDiv.innerHTML = `<p class="text-purple-300 font-orbitron text-xs mb-1">GENERATING STRUCTURED PROTOCOL</p><p class="text-gray-200">Synthesizing formal Agency of Eternity (AoE) communication protocol via JSON schema...</p>`;
+            modalChatMessages.appendChild(initDiv);
+            modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
+
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`;
+                const payload = {
+                    contents: [{ role: 'user', parts: [{ text: "Generate a structured communication protocol for overcoming language/emotional barriers in emergency collaboration." }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "protocolName": { "type": "STRING" },
+                                "primaryChannel": { "type": "STRING" },
+                                "steps": {
+                                    "type": "ARRAY",
+                                    "items": { "type": "STRING" }
+                                },
+                                "resonanceFrequency": { "type": "STRING" }
+                            },
+                            "propertyOrdering": ["protocolName", "primaryChannel", "steps", "resonanceFrequency"]
+                        }
+                    }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const jsonStr = result.candidates[0].content.parts[0].text;
+                    const protocol = JSON.parse(jsonStr);
+
+                    const resDiv = document.createElement('div');
+                    resDiv.className = 'bg-black/70 border border-purple-500/40 p-4 rounded-xl';
+                    resDiv.innerHTML = `
+                        <h4 class="font-orbitron text-cyan-300 text-sm">${escapeHtml(protocol.protocolName)}</h4>
+                        <p class="text-xs text-pink-400 font-mono my-1">CHANNEL: ${escapeHtml(protocol.primaryChannel)} // FREQ: ${escapeHtml(protocol.resonanceFrequency)}</p>
+                        <ol class="list-decimal list-inside text-xs text-gray-300 space-y-1 mt-2">
+                            ${protocol.steps.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                        </ol>
+                    `;
+                    modalChatMessages.appendChild(resDiv);
+                }
+            } catch (err) {
+                const errDiv = document.createElement('div');
+                errDiv.className = 'bg-red-950/40 border border-red-500/30 p-3 rounded-xl text-xs text-red-300';
+                errDiv.innerText = "Protocol generation temporarily offline. Default AoE safety protocol active.";
+                modalChatMessages.appendChild(errDiv);
+            }
+            modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
+        });
+
+        // Gemini Voice TTS Audio Brief
+        document.getElementById('audio-brief-btn').addEventListener('click', async () => {
+            modalTitle.innerText = "AoE AUDIO BRIEFING (TTS VOICE)";
+            aiModal.classList.remove('opacity-0', 'pointer-events-none');
+            
+            const playerContainer = document.getElementById('tts-player-container');
+            const ttsStatus = document.getElementById('tts-status');
+            const audioElement = document.getElementById('tts-audio-element');
+            
+            playerContainer.classList.remove('hidden');
+            ttsStatus.innerText = "Synthesizing voice briefing via Gemini TTS...";
+
+            try {
+                const ttsPayload = {
+                    contents: [{
+                        parts: [{ text: "Say warmly and with peaceful strength: Welcome to the Agency of Eternity. Through music, art, gestures, and unconditional empathy, we transcend all Babel noise. You are never alone." }]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                            voiceConfig: {
+                                prebuiltVoiceConfig: { voiceName: "Zephyr" }
+                            }
+                        }
+                    },
+                    model: "gemini-2.5-flash-preview-tts"
+                };
+
+                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=`;
+                const ttsResp = await fetch(ttsUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ttsPayload)
+                });
+
+                if (ttsResp.ok) {
+                    const result = await ttsResp.json();
+                    const part = result?.candidates?.[0]?.content?.parts?.[0];
+                    const audioData = part?.inlineData?.data;
+                    const mimeType = part?.inlineData?.mimeType;
+
+                    if (audioData && mimeType) {
+                        const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                        const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
+                        const pcmData = decodeBase64ToBuffer(audioData);
+                        const pcm16 = new Int16Array(pcmData);
+                        const wavBlob = pcmToWav(pcm16, sampleRate);
+                        
+                        audioElement.src = URL.createObjectURL(wavBlob);
+                        ttsStatus.innerText = "Voice Briefing Ready.";
+                        audioElement.play();
+                    }
+                }
+            } catch (err) {
+                ttsStatus.innerText = "Audio synthesis fallback.";
+            }
+        });
+
+        function decodeBase64ToBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
+            return bytes.buffer;
+        }
+
+        function pcmToWav(pcm16, sampleRate) {
+            const buffer = new ArrayBuffer(44 + pcm16.length * 2);
+            const view = new DataView(buffer);
+            function writeString(v, offset, str) {
+                for (let i = 0; i < str.length; i++) v.setUint8(offset + i, str.charCodeAt(i));
+            }
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + pcm16.length * 2, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, pcm16.length * 2, true);
+            let offset = 44;
+            for (let i = 0; i < pcm16.length; i++, offset += 2) view.setInt16(offset, pcm16[i], true);
+            return new Blob([view], { type: 'audio/wav' });
+        }
+
+        // Standard Chat Interaction
+        const chatHistory = [];
+        modalSendBtn.addEventListener('click', () => {
+            const msg = modalInput.value.trim();
+            if (msg) {
+                sendAiChatMessage(msg);
+                modalInput.value = '';
+            }
+        });
+
+        modalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') modalSendBtn.click();
+        });
+
+        async function sendAiChatMessage(userMsg) {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'bg-black/60 border border-gray-800 p-4 rounded-xl ml-8';
+            userDiv.innerHTML = `<p class="text-pink-400 font-orbitron text-xs mb-1">OPERATOR</p><p class="text-gray-200">${escapeHtml(userMsg)}</p>`;
+            modalChatMessages.appendChild(userDiv);
+            modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
+
+            chatHistory.push({ role: "user", parts: [{ text: userMsg }] });
+
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'bg-cyan-950/20 border border-cyan-500/20 p-4 rounded-xl mr-8 animate-pulse';
+            loadingDiv.innerHTML = `<p class="text-cyan-400 font-orbitron text-xs mb-1">AoE CORE</p><p class="text-cyan-200 text-xs">Processing neural transmission...</p>`;
+            modalChatMessages.appendChild(loadingDiv);
+            modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
+
+            try {
+                const systemInstruction = "You are the Agency of Eternity (AoE) neural guide embedded in SylverCrystall OS X. You support humanity through the Babel communication barrier using music, gestures, sacred geometry, and inclusive empathy. Provide comforting, strategic, grounded, and visionary guidance.";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`;
+
+                const payload = {
+                    contents: chatHistory,
+                    systemInstruction: { parts: [{ text: systemInstruction }] }
+                };
+
+                const resp = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                modalChatMessages.removeChild(loadingDiv);
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "The SylverCrystall core echoes your intent with deep resonance.";
+                    chatHistory.push(data.candidates[0].content);
+
+                    const aiDiv = document.createElement('div');
+                    aiDiv.className = 'bg-cyan-950/40 border border-cyan-500/30 p-4 rounded-xl mr-8';
+                    aiDiv.innerHTML = `<p class="text-cyan-300 font-orbitron text-xs mb-1">AoE CORE</p><p class="text-gray-200 leading-relaxed">${escapeHtml(aiText)}</p>`;
+                    modalChatMessages.appendChild(aiDiv);
+                }
+            } catch (e) {
+                const errDiv = document.createElement('div');
+                errDiv.className = 'bg-red-950/40 border border-red-500/30 p-3 rounded-xl text-xs text-red-300';
+                errDiv.innerText = "Connection pulse lost. Rest assured, AoE link remains unbroken in spirit.";
+                modalChatMessages.appendChild(errDiv);
+            }
+            modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            crystalCore.rotation.x = time * 0.3;
+            crystalCore.rotation.y = time * 0.5;
+            outerCrystal.rotation.x = -time * 0.2;
+            outerCrystal.rotation.y = -time * 0.3;
+
+            particleSystem.rotation.y = time * 0.05;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
